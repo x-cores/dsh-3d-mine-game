@@ -182,7 +182,8 @@ function mountMine3D(container, opts) {
     if (Math.abs(e.clientX - downX) + Math.abs(e.clientY - downY) > DRAG_THRESHOLD) moved = true;
     if (moved) {
       const k = 0.008;
-      q = qMul(qMul(qAxis([0, 1, 0], dx * k), qAxis([1, 0, 0], dy * k)), q);
+      // 垂直方向取负：向下拖 → 立方体顶边向观察者翻（与直觉一致），水平保持自然方向
+      q = qMul(qMul(qAxis([0, 1, 0], dx * k), qAxis([1, 0, 0], -dy * k)), q);
       applyRotation();
       vel = [dx, dy];
     }
@@ -202,7 +203,7 @@ function mountMine3D(container, opts) {
     const step = () => {
       if (!vel) return;
       const k = 0.008;
-      q = qMul(qMul(qAxis([0, 1, 0], vel[0] * k), qAxis([1, 0, 0], vel[1] * k)), q);
+      q = qMul(qMul(qAxis([0, 1, 0], vel[0] * k), qAxis([1, 0, 0], -vel[1] * k)), q);
       applyRotation();
       vel[0] *= 0.92; vel[1] *= 0.92;
       if (Math.abs(vel[0]) + Math.abs(vel[1]) > 0.15) rafId = requestAnimationFrame(step);

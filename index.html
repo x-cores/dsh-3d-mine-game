@@ -11,16 +11,18 @@
     background: light-dark(#f4f6f9, #17191e); color: light-dark(#222, #eee);
     min-height: 90vh; margin: 0; }
   h1 { font-size: 20px; margin: 0; }
-  .hud { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .hud { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;
+    position: relative; z-index: 5; }
   .counter { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums;
     background: light-dark(#e3e8ef, #262a33); border-radius: 8px; padding: 5px 12px; }
   button { font-size: 14px; cursor: pointer; border: none; border-radius: 8px; padding: 6px 12px;
-    background: light-dark(#e3e8ef, #262a33); color: inherit; }
+    background: light-dark(#e3e8ef, #262a33); color: inherit; position: relative; z-index: 6; }
   button:hover { filter: brightness(1.1); }
   button.on { background: light-dark(#c8d8ec, #34405a); outline: 2px solid #4a90d9; }
   select { font-size: 14px; padding: 4px 8px; border-radius: 6px;
-    background: light-dark(#e3e8ef, #262a33); color: inherit; border: 1px solid #8884; }
-  #stage { width: min(88vmin, 560px); height: min(70vmin, 480px); }
+    background: light-dark(#e3e8ef, #262a33); color: inherit; border: 1px solid #8884;
+    position: relative; z-index: 6; }
+  #stage { width: min(88vmin, 560px); height: min(70vmin, 480px); position: relative; z-index: 0; }
   .note { font-size: 13px; opacity: .75; text-align: center; max-width: 640px; }
 </style>
 </head>
@@ -56,7 +58,7 @@ function stopTimer() { if (timer) { clearInterval(timer); timer = null; } }
 function resetTimer() { stopTimer(); elapsed = 0; $('time').textContent = '⏱ 00:00'; }
 
 const controller = Mine3DMount($('stage'), {
-  size: Math.min(360, Math.round(Math.min(window.innerWidth, window.innerHeight) * 0.5)),
+  size: Math.min(300, Math.round(Math.min(window.innerWidth, window.innerHeight) * 0.42)),
   onChange(s) {
     $('mines').textContent = '💣 ' + (s.mines - s.flagCount);
     $('face').textContent = s.status === 'won' ? '😎' : s.status === 'lost' ? '💥' : '🙂';

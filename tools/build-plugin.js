@@ -77,7 +77,8 @@ const ui = `
   cursor: pointer; font-size: 16px; line-height: 1; padding: 2px 6px; border-radius: 6px; }
 .m3fw-close:hover { background: var(--dsw-alias-interactive-bg-hover); }
 .m3fw-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
-.m3fw-hud { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.m3fw-hud { display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  position: relative; z-index: 5; }
 .m3fw-counter { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums;
   background: var(--dsw-alias-bg-layer-2); border-radius: 8px; padding: 4px 10px; min-width: 60px; text-align: center; }
 .m3fw-face { font-size: 16px; cursor: pointer; border: none; background: var(--dsw-alias-bg-layer-2);
@@ -90,7 +91,7 @@ const ui = `
   border-radius: 8px; padding: 4px 8px; color: var(--dsw-alias-label-primary); }
 .m3fw-ghost.on { outline: 2px solid #4a90d9; }
 .m3fw-note { font-size: 12px; color: var(--dsw-alias-label-tertiary); }
-.m3fw-stage { width: 320px; height: 300px; }
+.m3fw-stage { width: 296px; height: 268px; position: relative; z-index: 0; }
 \`;
 
     function fmtTime(sec) {
@@ -114,7 +115,7 @@ const ui = `
       React.useEffect(() => {
         if (!open || !stageRef.current) return;
         ctrlRef.current = window.Mine3DMount(stageRef.current, {
-          size: 290,
+          size: 225,
           onChange: s => setSnap({ ...s, grid: null, _sig: Date.now(), status: s.status, mines: s.mines,
             flagCount: s.flagCount, minesPlaced: s.minesPlaced, level: s.level, n: s.n, total: s.total,
             revealedCount: s.revealedCount }),
@@ -155,7 +156,7 @@ const ui = `
         : snap.minesPlaced ? '拖动旋转 · 点击翻开 · 右键标旗 · 双击数字 chord'
         : '点击任意格子开始（首翻安全 · 本局无猜可解）';
 
-      return h('div', { className: 'm3fw-root', style: { left: pos.x + 'px', top: pos.y + 'px', width: '346px' } },
+      return h('div', { className: 'm3fw-root', style: { left: pos.x + 'px', top: pos.y + 'px', width: '322px' } },
         h('style', null, CSS),
         h('div', { className: 'm3fw-titlebar', onPointerDown, onPointerMove, onPointerUp },
           h('span', { className: 't' }, '🧊 3D 排雷（Cube Minesweeper）'),
