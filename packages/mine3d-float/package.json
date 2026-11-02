@@ -5,7 +5,7 @@
   "description": "3D Minesweeper on a cube surface in a draggable floating window: no-guess generation, drag to rotate, ghost mode.",
   "repository": {
     "type": "git",
-    "url": "git+ssh://localhost/3dmine.git",
+    "url": "git+https://github.com/x-cores/dsh-3d-mine-game.git",
     "directory": "packages/mine3d-float"
   },
   "type": "module",
