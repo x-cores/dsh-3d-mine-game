@@ -91,7 +91,7 @@ const ui = `
   border-radius: 8px; padding: 4px 8px; color: var(--dsw-alias-label-primary); }
 .m3fw-ghost.on { outline: 2px solid #4a90d9; }
 .m3fw-note { font-size: 12px; color: var(--dsw-alias-label-tertiary); }
-.m3fw-stage { width: 296px; height: 268px; position: relative; z-index: 0; }
+.m3fw-stage { width: 372px; height: 348px; position: relative; z-index: 0; }
 \`;
 
     function fmtTime(sec) {
@@ -105,7 +105,7 @@ const ui = `
       const [elapsed, setElapsed] = React.useState(0);
       const [ghost, setGhost] = React.useState(false);
       const [pos, setPos] = React.useState(() => ({
-        x: Math.max(12, Math.round(window.innerWidth - 400 - 48)),
+        x: Math.max(12, Math.round(window.innerWidth - 430 - 48)),
         y: Math.max(12, Math.round(window.innerHeight * 0.16)),
       }));
       const dragRef = React.useRef(null);
@@ -115,7 +115,7 @@ const ui = `
       React.useEffect(() => {
         if (!open || !stageRef.current) return;
         ctrlRef.current = window.Mine3DMount(stageRef.current, {
-          size: 225,
+          size: 250,
           onChange: s => setSnap({ ...s, grid: null, _sig: Date.now(), status: s.status, mines: s.mines,
             flagCount: s.flagCount, minesPlaced: s.minesPlaced, level: s.level, n: s.n, total: s.total,
             revealedCount: s.revealedCount }),
@@ -156,7 +156,7 @@ const ui = `
         : snap.minesPlaced ? '拖动旋转 · 点击翻开 · 右键标旗 · 双击数字 chord'
         : '点击任意格子开始（首翻安全 · 本局无猜可解）';
 
-      return h('div', { className: 'm3fw-root', style: { left: pos.x + 'px', top: pos.y + 'px', width: '322px' } },
+      return h('div', { className: 'm3fw-root', style: { left: pos.x + 'px', top: pos.y + 'px', width: '398px' } },
         h('style', null, CSS),
         h('div', { className: 'm3fw-titlebar', onPointerDown, onPointerMove, onPointerUp },
           h('span', { className: 't' }, '🧊 3D 排雷（Cube Minesweeper）'),
