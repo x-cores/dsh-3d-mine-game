@@ -40,6 +40,16 @@
   <button id="face" title="重新开始">🙂</button>
   <div class="counter" id="time">⏱ 00:00</div>
   <button id="ghost" title="透视模式：格子半透明，可看到背面">👻 透视</button>
+  <label>配色
+    <select id="theme">
+      <option value="ocean">Ocean 海洋蓝</option>
+      <option value="emerald">Emerald 翡翠绿</option>
+      <option value="sunset">Sunset 落日橙</option>
+      <option value="violet">Violet 罗兰紫</option>
+      <option value="cherry">Cherry 樱花粉</option>
+      <option value="slate">Slate 石板灰（原版）</option>
+    </select>
+  </label>
 </div>
 <div id="stage"></div>
 <div class="note" id="status"></div>
@@ -78,6 +88,7 @@ $('ghost').addEventListener('click', () => {
   controller.setGhost(ghost);
   $('ghost').classList.toggle('on', ghost);
 });
+$('theme').addEventListener('change', e => controller.setTheme(e.target.value));
 </script>
 </body>
 </html>

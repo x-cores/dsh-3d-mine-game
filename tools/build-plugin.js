@@ -104,6 +104,7 @@ const ui = `
       const [snap, setSnap] = React.useState(() => window.Mine3D.newGame('beginner'));
       const [elapsed, setElapsed] = React.useState(0);
       const [ghost, setGhost] = React.useState(false);
+      const [theme, setTheme] = React.useState('ocean');
       const [pos, setPos] = React.useState(() => ({
         x: Math.max(12, Math.round(window.innerWidth - 430 - 48)),
         y: Math.max(12, Math.round(window.innerHeight * 0.16)),
@@ -173,6 +174,11 @@ const ui = `
               type: 'button', className: 'm3fw-ghost' + (ghost ? ' on' : ''), title: '透视模式',
               onClick: () => { const g = !ghost; setGhost(g); ctrlRef.current && ctrlRef.current.setGhost(g); },
             }, '👻 透视'),
+            h('select', {
+              className: 'm3fw-sel', title: '配色', value: theme,
+              onChange: e => { setTheme(e.target.value); ctrlRef.current && ctrlRef.current.setTheme(e.target.value); },
+            }, Object.entries(window.Mine3DThemes || {}).map(([k, T]) =>
+              h('option', { key: k, value: k }, T.label))),
           ),
           h('div', { className: 'm3fw-note' }, statusLine),
           h('div', { className: 'm3fw-stage', ref: stageRef }),

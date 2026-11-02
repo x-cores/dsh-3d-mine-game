@@ -33,7 +33,10 @@ function qToMatrix3d(q) {
 const CSS_TEXT = `
 .m3d-scene { position: relative; width: 100%; height: 100%; display: flex;
   align-items: center; justify-content: center; perspective: 1100px; cursor: grab;
-  touch-action: none; user-select: none; -webkit-user-select: none; }
+  touch-action: none; user-select: none; -webkit-user-select: none;
+  --cov: #5b8def; --cov-b: #4470c8; --cov-h: #7aa7f5;
+  --open: light-dark(#dfe5ec, #232732); --open-b: light-dark(#c6cfda, #1b1f28);
+  --zero: light-dark(#eef2f6, #1d212a); }
 .m3d-scene.m3d-dragging { cursor: grabbing; }
 .m3d-rotor { position: relative; transform-style: preserve-3d; }
 .m3d-face { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; }
@@ -45,22 +48,30 @@ const CSS_TEXT = `
   backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .m3d-cell .f1 { transform: rotateY(180deg); }
 .m3d-cell.m3d-covered .f0, .m3d-cell.m3d-covered .f1 {
-  background: light-dark(#9db3c8, #3a4353); border: 1px solid light-dark(#7f97b1, #2c3442); }
+  background: var(--cov); border: 1px solid var(--cov-b); }
 .m3d-cell.m3d-covered:hover .f0, .m3d-cell.m3d-covered:hover .f1 {
-  background: light-dark(#b8cae0, #4a556a); }
+  background: var(--cov-h); }
 .m3d-cell.m3d-open .f0, .m3d-cell.m3d-open .f1 {
-  background: light-dark(#dfe5ec, #232732); border: 1px solid light-dark(#c6cfda, #1b1f28); }
+  background: var(--open); border: 1px solid var(--open-b); }
 .m3d-cell.m3d-zero .f0, .m3d-cell.m3d-zero .f1 {
-  background: light-dark(#eef2f6, #1d212a); }
+  background: var(--zero); }
 .m3d-cell.m3d-boom .f0, .m3d-cell.m3d-boom .f1 { background: #d43a2f; }
 .m3d-cell .n1 { color: #4a90d9; } .m3d-cell .n2 { color: #3f9d4e; }
 .m3d-cell .n3 { color: #d1342f; } .m3d-cell .n4 { color: #8248c7; }
 .m3d-cell .n5 { color: #b05a1e; } .m3d-cell .n6 { color: #17a39c; }
 .m3d-cell .n7 { color: #888; } .m3d-cell .n8 { color: #aaa; }
 .m3d-scene.m3d-ghost .m3d-cell { opacity: .45; }
-.m3d-scene.m3d-ghost .m3d-cell.m3d-zero .f0,
-.m3d-scene.m3d-ghost .m3d-cell.m3d-zero .f1 { background: light-dark(#eef2f6, #1d212a); }
 `;
+
+// 配色主题（未翻开格 --cov/--cov-b/--cov-h；翻开格沿用明暗自适应）
+const THEMES = {
+  ocean:  { label: 'Ocean 海洋蓝', vars: { '--cov': '#5b8def', '--cov-b': '#4470c8', '--cov-h': '#7aa7f5' } },
+  emerald:{ label: 'Emerald 翡翠绿', vars: { '--cov': '#34a872', '--cov-b': '#28875c', '--cov-h': '#4cbd8a' } },
+  sunset: { label: 'Sunset 落日橙', vars: { '--cov': '#ef8a5b', '--cov-b': '#d06f42', '--cov-h': '#f7a27d' } },
+  violet: { label: 'Violet 罗兰紫', vars: { '--cov': '#9b7bef', '--cov-b': '#7f62cc', '--cov-h': '#af97f4' } },
+  cherry: { label: 'Cherry 樱花粉', vars: { '--cov': '#ef6f95', '--cov-b': '#cc527a', '--cov-h': '#f78eae' } },
+  slate:  { label: 'Slate 石板灰（原版）', vars: { '--cov': '#9db3c8', '--cov-b': '#7f97b1', '--cov-h': '#b8cae0' } },
+};
 
 const FACE_TRANSFORMS = [
   'translateZ(HALF)',                 // front
@@ -245,6 +256,11 @@ function mountMine3D(container, opts) {
     start(levelKey) { game = E.newGame(levelKey || game.level); buildCube(); },
     restart() { game = E.newGame(game.level); buildCube(); },
     setGhost(on) { scene.classList.toggle('m3d-ghost', !!on); },
+    setTheme(key) {
+      const t = THEMES[key] || THEMES.ocean;
+      for (const [k, v] of Object.entries(t.vars)) scene.style.setProperty(k, v);
+    },
+    themes: THEMES,
     getState() { return game; },
     rotate(dx, dy) { // 程序化旋转（HUD 按钮等）
       q = qMul(qMul(qAxis([0, 1, 0], dx), qAxis([1, 0, 0], dy)), q);
@@ -258,5 +274,5 @@ function mountMine3D(container, opts) {
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = { mountMine3D };
-else global.Mine3DMount = mountMine3D;
+else { global.Mine3DMount = mountMine3D; global.Mine3DThemes = THEMES; }
 })(typeof window !== 'undefined' ? window : globalThis);
