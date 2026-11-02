@@ -35,8 +35,7 @@ const CSS_TEXT = `
   align-items: center; justify-content: center; perspective: 1100px; cursor: grab;
   touch-action: none; user-select: none; -webkit-user-select: none;
   --cov: #5b8def; --cov-b: #4470c8; --cov-h: #7aa7f5;
-  --open: light-dark(#dfe5ec, #232732); --open-b: light-dark(#c6cfda, #1b1f28);
-  --zero: light-dark(#eef2f6, #1d212a); }
+  --open: light-dark(#dfe5ec, #232732); --open-b: light-dark(#c6cfda, #1b1f28); }
 .m3d-scene.m3d-dragging { cursor: grabbing; }
 .m3d-rotor { position: relative; transform-style: preserve-3d; }
 .m3d-face { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; }
@@ -54,7 +53,7 @@ const CSS_TEXT = `
 .m3d-cell.m3d-open .f0, .m3d-cell.m3d-open .f1 {
   background: var(--open); border: 1px solid var(--open-b); }
 .m3d-cell.m3d-zero .f0, .m3d-cell.m3d-zero .f1 {
-  background: var(--zero); }
+  background: var(--open); border-color: var(--open-b); }
 .m3d-cell.m3d-boom .f0, .m3d-cell.m3d-boom .f1 { background: #d43a2f; }
 .m3d-cell .n1 { color: #4a90d9; } .m3d-cell .n2 { color: #3f9d4e; }
 .m3d-cell .n3 { color: #d1342f; } .m3d-cell .n4 { color: #8248c7; }
