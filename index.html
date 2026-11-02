@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3D 排雷 Cube Minesweeper</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; display: flex;
+    flex-direction: column; align-items: center; gap: 12px; padding: 20px;
+    background: light-dark(#f4f6f9, #17191e); color: light-dark(#222, #eee);
+    min-height: 90vh; margin: 0; }
+  h1 { font-size: 20px; margin: 0; }
+  .hud { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .counter { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums;
+    background: light-dark(#e3e8ef, #262a33); border-radius: 8px; padding: 5px 12px; }
+  button { font-size: 14px; cursor: pointer; border: none; border-radius: 8px; padding: 6px 12px;
+    background: light-dark(#e3e8ef, #262a33); color: inherit; }
+  button:hover { filter: brightness(1.1); }
+  button.on { background: light-dark(#c8d8ec, #34405a); outline: 2px solid #4a90d9; }
+  select { font-size: 14px; padding: 4px 8px; border-radius: 6px;
+    background: light-dark(#e3e8ef, #262a33); color: inherit; border: 1px solid #8884; }
+  #stage { width: min(88vmin, 560px); height: min(70vmin, 480px); }
+  .note { font-size: 13px; opacity: .75; text-align: center; max-width: 640px; }
+</style>
+</head>
+<body>
+<h1>💣 3D 排雷 · 立方体扫雷</h1>
+<div class="hud">
+  <label>难度
+    <select id="level">
+      <option value="beginner">初级 4×4×6 · 12雷</option>
+      <option value="intermediate">中级 5×5×6 · 26雷</option>
+      <option value="expert">高级 6×6×6 · 42雷</option>
+    </select>
+  </label>
+  <div class="counter" id="mines"></div>
+  <button id="face" title="重新开始">🙂</button>
+  <div class="counter" id="time">⏱ 00:00</div>
+  <button id="ghost" title="透视模式：格子半透明，可看到背面">👻 透视</button>
+</div>
+<div id="stage"></div>
+<div class="note" id="status"></div>
+<div class="note">拖动旋转立方体 · 点击翻开 · 右键标旗 · 双击数字快速展开（chord）· 每局均保证逻辑可解（无猜生成）</div>
+
+<script src="engine/mine3d-engine.js"></script>
+<script src="game/mine3d-view.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let elapsed = 0, timer = null;
+function fmtTime(sec) {
+  return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0');
+}
+function tick() { elapsed++; $('time').textContent = '⏱ ' + fmtTime(elapsed); }
+function stopTimer() { if (timer) { clearInterval(timer); timer = null; } }
+function resetTimer() { stopTimer(); elapsed = 0; $('time').textContent = '⏱ 00:00'; }
+
+const controller = Mine3DMount($('stage'), {
+  size: Math.min(360, Math.round(Math.min(window.innerWidth, window.innerHeight) * 0.5)),
+  onChange(s) {
+    $('mines').textContent = '💣 ' + (s.mines - s.flagCount);
+    $('face').textContent = s.status === 'won' ? '😎' : s.status === 'lost' ? '💥' : '🙂';
+    $('status').textContent = s.status === 'won' ? `🎉 胜利！用时 ${fmtTime(elapsed)}`
+      : s.status === 'lost' ? '💥 踩雷了 — 点 🙂 重开'
+      : s.minesPlaced ? '拖动旋转 · 左键翻开 · 右键标旗 · 双击数字 chord'
+      : '点击任意格子开始（首翻保证安全，本局无猜可解）';
+    if (s.minesPlaced && s.status === 'playing' && !timer) timer = setInterval(tick, 1000);
+    if (s.status !== 'playing') stopTimer();
+  },
+});
+$('face').addEventListener('click', () => { resetTimer(); controller.restart(); });
+$('level').addEventListener('change', e => { resetTimer(); controller.start(e.target.value); });
+let ghost = false;
+$('ghost').addEventListener('click', () => {
+  ghost = !ghost;
+  controller.setGhost(ghost);
+  $('ghost').classList.toggle('on', ghost);
+});
+</script>
+</body>
+</html>

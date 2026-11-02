@@ -1,0 +1,21 @@
+{
+  "name": "dsh-mine3d-float",
+  "version": "1.0.0",
+  "private": true,
+  "description": "3D Minesweeper on a cube surface in a draggable floating window: no-guess generation, drag to rotate, ghost mode.",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://localhost/3dmine.git",
+    "directory": "packages/mine3d-float"
+  },
+  "type": "module",
+  "exports": { ".": "./index.js", "./client": "./client.js" },
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": ["@deepseek-ai/dsh-client-ui-conversation"]
+    }
+  }
+}
