@@ -1,6 +1,6 @@
 {
   "name": "dsh-mine3d-float",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "3D Minesweeper on a cube surface in a draggable floating window: no-guess generation, drag to rotate, ghost mode.",
   "repository": {

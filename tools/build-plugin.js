@@ -60,7 +60,7 @@ const ui = `
         },
         onMouseEnter: e => { e.currentTarget.style.background = 'var(--dsw-alias-interactive-bg-hover)'; },
         onMouseLeave: e => { e.currentTarget.style.background = 'transparent'; },
-      }, '🧊');
+      }, '▦');
     }
 
     const CSS = \`
@@ -160,7 +160,7 @@ const ui = `
       return h('div', { className: 'm3fw-root', style: { left: pos.x + 'px', top: pos.y + 'px', width: '398px' } },
         h('style', null, CSS),
         h('div', { className: 'm3fw-titlebar', onPointerDown, onPointerMove, onPointerUp },
-          h('span', { className: 't' }, '🧊 3D 排雷（Cube Minesweeper）'),
+          h('span', { className: 't' }, '▦ 3D 排雷（Cube Minesweeper）'),
           h('button', { type: 'button', className: 'm3fw-close', title: '关闭', onClick: () => set(false) }, '✕'),
         ),
         h('div', { className: 'm3fw-body' },

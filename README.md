@@ -41,7 +41,7 @@ dsh plugin --profile web add link:/home/phoenix/Projects/3DMine/packages/mine3d-
 
 离线安装包（GitHub Release）：<https://github.com/x-cores/dsh-3d-mine-game/releases/latest>
 
-安装后刷新 Web 页面即可看到 🧊 按钮。
+安装后刷新 Web 页面即可看到 ▦ 按钮。
 
 ## 目录结构
 
