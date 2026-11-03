@@ -69,7 +69,7 @@ for (const key of Object.keys(E.LEVELS)) {
 
 // ---------- 2. 首翻安全 + 无猜可解 ----------
 section('无猜生成（每难度 30 局采样）');
-for (const key of Object.keys(E.LEVELS)) {
+for (const key of ['beginner', 'intermediate', 'expert']) {
   const L = E.LEVELS[key];
   let solvable = 0, fallback = 0, attempts = [];
   const t0 = Date.now();
@@ -110,6 +110,43 @@ section('泛洪展开');
   const after2 = E.reveal(s2, Math.floor(s2.total / 2));
   ok(after2.revealedCount === s2.total && after2.status === 'won',
     `无雷局单点翻开全泛洪至胜利（${after2.revealedCount}/${s2.total}）`);
+}
+
+// ---------- 3.5 实心模式（26 邻域） ----------
+section('实心模式（26 邻域体素）');
+for (const key of ['solid4', 'solid5', 'solid6']) {
+  const L = E.LEVELS[key], n = L.n;
+  const s = E.newGame(key);
+  ok(s.solid && s.total === n ** 3, `${key}: total = ${n}³（实得 ${s.total}）`);
+  const nb = s.neighbors;
+  let shapeOk = true, sym = true;
+  const cornerId = 0;
+  for (let x = 0; x < n; x++) for (let y = 0; y < n; y++) for (let z = 0; z < n; z++) {
+    const id = (x * n + y) * n + z;
+    const inner = [x, y, z].filter(v => v > 0 && v < n - 1).length;
+    const want = inner === 3 ? 26 : inner === 2 ? 17 : inner === 1 ? 11 : 7;
+    if (nb[id].length !== want) shapeOk = false;
+    for (const t of nb[id]) if (!nb[t].includes(id)) sym = false;
+  }
+  ok(shapeOk, `${key}: 邻居数形状正确（内26/面17/棱11/角7）`);
+  ok(sym, `${key}: 邻居关系对称`);
+  ok(nb[cornerId].length === 7, `${key}: 角格 7 邻`);
+  let solv = 0, att = [];
+  const t0 = Date.now();
+  for (let g = 0; g < 15; g++) {
+    const g0 = E.newGame(key);
+    const first = Math.floor(Math.random() * g0.total);
+    const after = E.reveal(g0, first);
+    if (after.grid.filter(c => c.mine).length !== L.mines) { ok(false, `${key}: 雷数不符`); break; }
+    if (E.solveFrom(after, first)) solv++;
+    att.push(after.genAttempts);
+  }
+  ok(solv === 15, `${key}: 15/15 局无猜可解（实得 ${solv}）`);
+  console.log(`  ${key}: 平均尝试 ${(att.reduce((a, b) => a + b, 0) / att.length).toFixed(1)} 次，15 局 ${Date.now() - t0}ms`);
+}
+{
+  const s = E.newGame('beginner');
+  ok(!s.solid && s.total === 96, '表面模式回归：beginner 仍为 96 格非实心');
 }
 
 // ---------- 4. 标旗 / chord / 胜负 ----------

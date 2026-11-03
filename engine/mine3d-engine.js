@@ -6,9 +6,12 @@
 'use strict';
 
 const LEVELS = {
-  beginner: { label: '初级 4×4×6 · 96格 12雷', n: 4, mines: 12 },
-  intermediate: { label: '中级 5×5×6 · 150格 26雷', n: 5, mines: 26 },
-  expert: { label: '高级 6×6×6 · 216格 42雷', n: 6, mines: 42 },
+  beginner: { label: '表面 初级 4×4×6 · 96格 12雷', n: 4, mines: 12 },
+  intermediate: { label: '表面 中级 5×5×6 · 150格 26雷', n: 5, mines: 26 },
+  expert: { label: '表面 高级 6×6×6 · 216格 42雷', n: 6, mines: 42 },
+  solid4: { label: '实心 4³ · 64格 10雷', n: 4, mines: 10, solid: true },
+  solid5: { label: '实心 5³ · 125格 20雷', n: 5, mines: 20, solid: true },
+  solid6: { label: '实心 6³ · 216格 45雷', n: 6, mines: 45, solid: true },
 };
 
 // 6 面：法向 n、面内 u(→i 增)/v(→j 增) 方向。与 CSS 面变换一一对应：
@@ -128,16 +131,39 @@ function buildNeighbors(n) {
   return table;
 }
 
+// ---------- 实心模式：26 邻域（3×3×3 减自身，边界裁剪） ----------
+// 体素 (x,y,z) → id = (x*n + y)*n + z；x 为层号
+function buildNeighborsSolid(n) {
+  const key = 'solid' + n;
+  if (neighborCache[key]) return neighborCache[key];
+  const total = n * n * n;
+  const sid = (x, y, z) => (x * n + y) * n + z;
+  const table = new Array(total);
+  for (let x = 0; x < n; x++) for (let y = 0; y < n; y++) for (let z = 0; z < n; z++) {
+    const list = [];
+    for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) {
+      if (!dx && !dy && !dz) continue;
+      const nx = x + dx, ny = y + dy, nz = z + dz;
+      if (nx >= 0 && nx < n && ny >= 0 && ny < n && nz >= 0 && nz < n) list.push(sid(nx, ny, nz));
+    }
+    table[sid(x, y, z)] = list;
+  }
+  neighborCache[key] = table;
+  return table;
+}
+
 // ---------- 游戏状态 ----------
 function newGame(levelKey) {
   const L = LEVELS[levelKey] || LEVELS.beginner;
   const n = L.n;
+  const solid = !!L.solid;
+  const total = solid ? n * n * n : 6 * n * n;
   return {
     level: LEVELS[levelKey] ? levelKey : 'beginner',
-    n, mines: L.mines, total: 6 * n * n,
-    neighbors: buildNeighbors(n),
+    n, solid, mines: L.mines, total,
+    neighbors: solid ? buildNeighborsSolid(n) : buildNeighbors(n),
     minesPlaced: false, genAttempts: 0,
-    grid: Array.from({ length: 6 * n * n }, () => ({
+    grid: Array.from({ length: total }, () => ({
       mine: false, revealed: false, flag: false, n: 0, exploded: false,
     })),
     status: 'playing', revealedCount: 0, flagCount: 0,
@@ -169,6 +195,39 @@ function solveFrom(state, firstId) {
         for (const nb of unknown) s = reveal(s, nb);
         progress = true;
         if (s.status !== 'playing') break;
+      }
+    }
+    // 子集规则：前沿约束对 (A,B)，unknowns(A) ⊆ unknowns(B) ⇒ 差集可判
+    // （实心模式 26 邻域信息稀释，单格规则不够，必须加这条）
+    if (!progress && s.status === 'playing') {
+      const cons = [];
+      for (let id = 0; id < s.total; id++) {
+        const c = s.grid[id];
+        if (c.flag || !c.revealed || c.n === 0) continue;
+        const unknown = s.neighbors[id].filter(nb => !s.grid[nb].revealed && !s.grid[nb].flag);
+        if (unknown.length === 0) continue;
+        const minesLeft = c.n - s.neighbors[id].filter(nb => s.grid[nb].flag).length;
+        cons.push({ set: new Set(unknown), list: unknown, m: minesLeft });
+      }
+      outer:
+      for (let a = 0; a < cons.length; a++) for (let b = 0; b < cons.length; b++) {
+        if (a === b || cons[a].set.size >= cons[b].set.size) continue;
+        const A = cons[a], B = cons[b];
+        let subset = true;
+        for (const u of A.list) if (!B.set.has(u)) { subset = false; break; }
+        if (!subset) continue;
+        const diff = B.list.filter(u => !A.set.has(u));
+        if (diff.length === 0) continue;
+        const dm = B.m - A.m;
+        if (dm === 0) {
+          for (const u of diff) s = reveal(s, u);
+          progress = true;
+          if (s.status !== 'playing') break outer;
+        } else if (dm === diff.length) {
+          for (const u of diff) { s.grid[u].flag = true; s.flagCount++; }
+          progress = true;
+        }
+        if (progress) break outer;
       }
     }
     // 全局约束：剩余雷数与未翻格数的关系
@@ -287,7 +346,7 @@ function chord(prev, id) {
   return s;
 }
 
-const api = { LEVELS, FACES, newGame, cloneState, neighborsOf, buildNeighbors, walkNeighbor,
+const api = { LEVELS, FACES, newGame, cloneState, neighborsOf, buildNeighbors, buildNeighborsSolid, walkNeighbor,
   cellCenter, cellId, idParts, placeMines, solveFrom, reveal, toggleFlag, chord };
 if (typeof module !== 'undefined' && module.exports) module.exports = api;
 else global.Mine3D = api;

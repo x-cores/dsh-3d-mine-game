@@ -81,12 +81,18 @@ const FACE_TRANSFORMS = [
   'rotateX(-90deg) translateZ(HALF)', // bottom
 ];
 
+// 实心模式数字 9~26 的色阶（绿→黄→红），追加注入
+const NUM_RAMP_CSS = Array.from({ length: 18 }, (_, idx) => {
+  const i = idx + 9, hue = 95 - idx * 5.5; // 95(绿) → 2(红)
+  return '.m3d-cell .n' + i + ' { color: hsl(' + hue.toFixed(0) + ',72%,44%); }';
+}).join('\n');
+
 function mountMine3D(container, opts) {
   const E = global.Mine3D;
   opts = opts || {};
   const size = opts.size || 340;
   const style = document.createElement('style');
-  style.textContent = CSS_TEXT;
+  style.textContent = CSS_TEXT + '\n' + NUM_RAMP_CSS;
   if (!document.getElementById('m3d-style')) {
     style.id = 'm3d-style';
     document.head.appendChild(style);
@@ -111,32 +117,57 @@ function mountMine3D(container, opts) {
     rotor.style.transform = qToMatrix3d(q);
   }
 
+  function makeCell(id, i, j, cell, fontScale) {
+    const el = document.createElement('div');
+    el.className = 'm3d-cell';
+    el.style.width = el.style.height = cell + 'px';
+    el.style.left = i * cell + 'px';
+    el.style.top = j * cell + 'px';
+    el.style.fontSize = Math.round(cell * fontScale) + 'px';
+    const f0 = document.createElement('div'); f0.className = 'f0';
+    const f1 = document.createElement('div'); f1.className = 'f1';
+    el.appendChild(f0); el.appendChild(f1);
+    el.dataset.id = id;
+    return el;
+  }
+
   function buildCube() {
     rotor.innerHTML = '';
     cellEls = [];
     const n = game.n, half = size / 2, cell = size / n;
-    for (let f = 0; f < 6; f++) {
-      const face = document.createElement('div');
-      face.className = 'm3d-face';
-      face.style.width = face.style.height = size + 'px';
-      face.style.marginLeft = face.style.marginTop = -half + 'px';
-      face.style.transform = FACE_TRANSFORMS[f].replace('HALF', half + 'px');
-      for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
-        const id = (f * n + j) * n + i;
-        const el = document.createElement('div');
-        el.className = 'm3d-cell';
-        el.style.width = el.style.height = cell + 'px';
-        el.style.left = i * cell + 'px';
-        el.style.top = j * cell + 'px';
-        el.style.fontSize = Math.round(cell * 0.52) + 'px';
-        const f0 = document.createElement('div'); f0.className = 'f0';
-        const f1 = document.createElement('div'); f1.className = 'f1';
-        el.appendChild(f0); el.appendChild(f1);
-        el.dataset.id = id;
-        face.appendChild(el);
-        cellEls[id] = el;
+    if (game.solid) {
+      // 实心模式：N 层沿 Z 轴拉开（爆炸视图），层间隙可透视内部
+      const spacing = cell * 1.8;
+      for (let x = 0; x < n; x++) {
+        const layer = document.createElement('div');
+        layer.className = 'm3d-face';
+        layer.style.width = layer.style.height = size + 'px';
+        layer.style.marginLeft = layer.style.marginTop = -half + 'px';
+        const off = (x - (n - 1) / 2) * spacing;
+        layer.style.transform = 'translateZ(' + off.toFixed(1) + 'px)';
+        for (let y = 0; y < n; y++) for (let z = 0; z < n; z++) {
+          const id = (x * n + y) * n + z;
+          const el = makeCell(id, z, y, cell, 0.4);
+          layer.appendChild(el);
+          cellEls[id] = el;
+        }
+        rotor.appendChild(layer);
       }
-      rotor.appendChild(face);
+    } else {
+      for (let f = 0; f < 6; f++) {
+        const face = document.createElement('div');
+        face.className = 'm3d-face';
+        face.style.width = face.style.height = size + 'px';
+        face.style.marginLeft = face.style.marginTop = -half + 'px';
+        face.style.transform = FACE_TRANSFORMS[f].replace('HALF', half + 'px');
+        for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+          const id = (f * n + j) * n + i;
+          const el = makeCell(id, i, j, cell, 0.52);
+          face.appendChild(el);
+          cellEls[id] = el;
+        }
+        rotor.appendChild(face);
+      }
     }
     paint();
   }
@@ -161,9 +192,11 @@ function mountMine3D(container, opts) {
         content.className = 'f0';
       }
       content.textContent = text;
+      content.style.fontSize = /^\d{2}$/.test(text) ? '0.82em' : '';
       // 双面内容一致（f1 供背面观察者看到不镜像的文字）
       el.lastChild.className = content.className.replace('f0', 'f1');
       el.lastChild.textContent = content.textContent;
+      el.lastChild.style.fontSize = content.style.fontSize;
       el.className = cls;
     }
     if (opts.onChange) opts.onChange(game);
